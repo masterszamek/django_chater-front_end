@@ -28,15 +28,18 @@ export default class Authentication{
                 "body": JSON.stringify(user_form),
             }
         );
+
+        const data = await response.json();
         if(response.ok){
-           
-            const data = await response.json();
             this.set_user_authenticated(true);
             this.set_refresh_token(data.refresh);
             this.set_access_token(data.access);    
         }
         else
             this.set_user_authenticated(false);
+
+        return [response, data];
+
 
     }
     static logout(){
@@ -52,7 +55,7 @@ export default class Authentication{
 
     static set_user_authenticated(authenticated){
         this.#user.authenticated = authenticated;
-        this.set_access_token(undefined)
+
         
         this.#subscribers.forEach((func)=>{
             func(this.get_user());

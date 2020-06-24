@@ -1,57 +1,96 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {Form, Row, Col, Button} from 'react-bootstrap';
+import React, { useRef, useState} from 'react';
+import {Form, Row, Col, Button, Spinner} from 'react-bootstrap';
+
+
+import URLS from "home/routing_urls";
+import getWidthForm from '_helpers/get_width_form';
+import {itsFieldError, getFieldError} from '_helpers/form_helpers';
+import FormError from "_components/form_error";
+
+import AUTHENTICATION from "_services/auth_service";
+import { Redirect } from 'react-router';
 
 
 
 
 
+const SignInForm = (props)=>{
+    console.log(props);
+    const [login, setLogin] = useState();
+    const [password, setPassword] = useState();
+    const [is_pending, setIsPending] = useState(false);
+    const [error, setError] = useState();
 
-const SignIn = (props)=>{
-    const [data, setData] = useState({});
 
-    const handleSubmit = (e)=> {
+
+    const handleSubmit = async e => {
+        
         e.preventDefault();
         e.stopPropagation();
-        console.log(e.target)};
+       
+        const form = e.currentTarget;
+        if(!form.checkValidity) return;
 
-    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-    let width = 30;
-    const breakpoints = [
-        [1200, 20],
-        [992, 35],
-        [762, 40],
-        [576, 60],
-        [0, 90],
-    ]
-    for(let i=0; i<breakpoints.length; i++){
-        console.log(breakpoints[i])
-        if(vw > breakpoints[i][0]){
-            width = breakpoints[i][1];
-            break
+
+        setIsPending(true);
+        const [response, data] = await AUTHENTICATION.login(login, password)
+        setIsPending(false);
+
+        console.log(data);
+        if(!response.ok)setError(data);
+        else {
+            props.setRedirect(true);
         }
-    }
+    };
+
+    
     return (
-        <div style={{"width": `${width}%`}} className="www">
+        <Form onSubmit={handleSubmit}>
+            <Form.Group controlId="form_login">
+                <Form.Label>Login</Form.Label>
+                <Form.Control  required isInvalid={itsFieldError("username", error)} placeholder="Login" onChange={e=>{setLogin(e.target.value)}}/>
+                <Form.Control.Feedback type="invalid">
+                    {getFieldError("username", error)}
+                </Form.Control.Feedback>
+
+            </Form.Group>
+
+            <Form.Group controlId="form_password">
+                <Form.Label >Password</Form.Label>
+                <Form.Control  required isInvalid={itsFieldError("password", error)} type="password" placeholder="Password" onChange={e=>{setPassword(e.target.value)}} />
+                <Form.Control.Feedback type="invalid">
+                    {getFieldError("password", error)}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group>
+                <Button type="submit">
+                    {is_pending ? <Spinner animation="border" size="sm"/>: undefined}
+                    Sign In
+                </Button>
+                
+            </Form.Group>
+            <FormError error_set={error}/>
+
+        </Form>
+    )
+
+}
+
+const SignIn = (props)=>{
+    console.log(props);
+    const width = getWidthForm();
+    const [redirect, setRedirect] = useState(false);
+    const redirect_path = props.location.state === null ? URLS.home : props.location.state.from.pathname;    
+
+    
+    if(redirect)
+        return <Redirect to={redirect_path}/>
+
+    return (
+        <div style={{"width": `${width}`}} className="www">
             <h3> Sign In </h3>
-
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formBasicEmail">
-                    <Form.Label> Email address</Form.Label>
-                    <Form.Control  type="email" placeholder="Enter email" onChange={(e)=>{console.log(e.target.value) }}/>
-                </Form.Group>
-
-                <Form.Group controlId="formBasicPassword">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" placeholder="Password" onChange={(e)=>{console.log(e) }} />
-                </Form.Group>
-
-                <Form.Group>
-                    <Button type="submit">Sign in</Button>
-                </Form.Group>
-            </Form>
-
-      
+                <SignInForm setRedirect={setRedirect}/>
         </div>
     )
 

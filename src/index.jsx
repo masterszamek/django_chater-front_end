@@ -1,26 +1,29 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {BrowserRouter as Router, Route} from 'react-router-dom';
-import Home from "./home/home.jsx";
+import Home from "./home/home";
 
-
-import Authentication from "_services/auth_service.js";
+import {UserContext} from "_contexts";
+import AUTHENTICATION from "_services/auth_service";
 
 
 import 'css/app.css';
 
+
+
+
 class App extends React.Component{
     constructor(props){
         super(props);
-        Authentication.get_current_session();
+        AUTHENTICATION.get_current_session();
 
 
         this.state = {
-            user: Authentication.get_user(),
+            user: AUTHENTICATION.get_user(),
             header: 999,
         }
         
-        Authentication.add_subscriber((user)=>
+        AUTHENTICATION.add_subscriber((user)=>
             this.setState({user: user})
         );
 
@@ -29,13 +32,15 @@ class App extends React.Component{
     render(){
 
         return (
-            <Router>
-                <Route>
-                    <Home user={this.state.user}/>
-                
-                
-                </Route>
-            </Router>
+            <UserContext.Provider value={this.state.user}>
+                <Router>
+                    <Route>
+                        <Home/>
+                    
+                    
+                    </Route>
+                </Router>
+            </UserContext.Provider>
         )
     }
 }

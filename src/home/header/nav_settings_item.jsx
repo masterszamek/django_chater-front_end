@@ -13,7 +13,7 @@ let items = [
     }
 ]
 
-const NavSettingstItem = (props)=><NavDropdownItem items={items} title="Support" alignRight></NavDropdownItem>
+const NavSettingstItem = (props)=><NavDropdownItem items={items} title="Settings" alignRight></NavDropdownItem>
 
 
 export {NavSettingstItem as default};
